@@ -1,7 +1,7 @@
 document.addEventListener("click", (e) => {
   if (e.target.dataset.type === "remove") {
     const id = e.target.dataset.id;
-    removeNote(id).then(() => e.target.closest("li").remove());
+    remove(id).then(() => e.target.closest("li").remove());
   }
 
   if (e.target.classList.contains("edit-btn")) {
@@ -68,7 +68,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
-async function removeNote(id) {
+async function remove(id) {
   await fetch(`/${id}`, { method: "DELETE" });
 }
 

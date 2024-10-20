@@ -50,6 +50,10 @@ async function updateNoteById(id, newTitle) {
   if (noteIndex !== -1) {
     notes[noteIndex].title = newTitle;
     await fs.writeFile(notesPath, JSON.stringify(notes, null, 2));
+
+    console.log(
+      chalk.bgBlue(`Note with id ${id} was changed, new title - ${newTitle}`)
+    );
   }
 }
 

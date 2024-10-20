@@ -1,64 +1,68 @@
-const chalk = require("chalk");
-const express = require("express");
-const path = require("path");
+const yargs = require("yargs");
+
 const {
   addNote,
-  getNotes,
+  printNotes,
   removeNoteById,
   updateNoteById,
 } = require("./notes.controller");
 
-const port = 3000;
-
-const app = express();
-
-app.set("view engine", "ejs");
-app.set("views", "pages");
-
-app.use(express.static(path.resolve(__dirname, "public")));
-
-app.use(
-  express.urlencoded({
-    extended: true,
-  })
-);
-
-app.use(express.json());
-
-app.get("/", async (req, res) => {
-  res.render("index", {
-    title: "Express app",
-    notes: await getNotes(),
-    created: false,
-  });
+yargs.command({
+  command: "add",
+  describe: "Add new note to list",
+  builder: {
+    title: {
+      type: "string",
+      describe: "Note title",
+      demandOption: true,
+    },
+  },
+  handler({ title }) {
+    addNote(title);
+  },
 });
 
-app.post("/", async (req, res) => {
-  console.log(req.body);
-  await addNote(req.body.title);
-  res.render("index", {
-    title: "Express app",
-    notes: await getNotes(),
-    created: true,
-  });
+yargs.command({
+  command: "list",
+  describe: "Print all notes",
+  async handler() {
+    await printNotes();
+  },
 });
 
-app.delete("/:id", async (req, res) => {
-  await removeNoteById(req.params.id);
-  res.render("index", {
-    title: "Express app",
-    notes: await getNotes(),
-    created: false,
-  });
+yargs.command({
+  command: "remove",
+  describe: "removeNote",
+  builder: {
+    id: {
+      type: "string",
+      describe: "Note ID",
+      demandOption: true,
+    },
+  },
+  async handler({ id }) {
+    await removeNoteById(id);
+  },
 });
 
-app.put("/:id", async (req, res) => {
-  const { id } = req.params;
-  const { title } = req.body;
-  await updateNoteById(id, title);
-  res.status(200).json({ message: "Note updated" });
+yargs.command({
+  command: "edit",
+  describe: "editNote",
+  builder: {
+    id: {
+      type: "string",
+      describe: "Note ID",
+      demandOption: true,
+    },
+    title: {
+      type: "string",
+      describe: "Note title",
+      demandOption: true,
+    },
+  },
+  async handler({ id, title }) {
+    await updateNoteById(id, title);
+  },
 });
 
-app.listen(port, () => {
-  console.log(chalk.green(`Server has been started on port ${port}...`));
-});
+yargs.parse();
