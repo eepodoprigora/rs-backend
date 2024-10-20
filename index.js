@@ -1,44 +1,64 @@
-const yargs = require("yargs");
+const chalk = require("chalk");
+const express = require("express");
+const path = require("path");
+const {
+  addNote,
+  getNotes,
+  removeNoteById,
+  updateNoteById,
+} = require("./notes.controller");
 
-const {addNote, printNotes, removeNoteById} = require('./notes.controller')
+const port = 3000;
 
-yargs.command({
-    command: 'add',
-    describe: 'Add new note to list',
-    builder: {
-        title: {
-            type: 'string',
-            describe: 'Note title',
-            demandOption: true
-        }
-    },
-    handler({title}) {
-        addNote(title)
-    }
-})
+const app = express();
 
-yargs.command({
-    command: 'list',
-    describe: 'Print all notes',
-    async handler() {
-         await printNotes()
-    }
-})
+app.set("view engine", "ejs");
+app.set("views", "pages");
 
-yargs.command({
-    command: 'remove',
-    describe: 'removeNote',
-    builder: {
-        id: {
-            type: 'string',
-            describe: 'Note ID',
-            demandOption: true
-        }
-    },
-    async handler({id}) {
-        await removeNoteById(id)
-    }
-})
+app.use(express.static(path.resolve(__dirname, "public")));
 
-yargs.parse()
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
 
+app.use(express.json());
+
+app.get("/", async (req, res) => {
+  res.render("index", {
+    title: "Express app",
+    notes: await getNotes(),
+    created: false,
+  });
+});
+
+app.post("/", async (req, res) => {
+  console.log(req.body);
+  await addNote(req.body.title);
+  res.render("index", {
+    title: "Express app",
+    notes: await getNotes(),
+    created: true,
+  });
+});
+
+app.delete("/:id", async (req, res) => {
+  await removeNoteById(req.params.id);
+  res.render("index", {
+    title: "Express app",
+    notes: await getNotes(),
+    created: false,
+  });
+});
+
+app.put("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { title } = req.body;
+  await updateNoteById(id, title);
+  res.status(200).json({ message: "Note updated" });
+});
+
+app.listen(port, () => {
+  console.log(chalk.green(`Server has been started on port ${port}...`));
+});
