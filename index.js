@@ -1,6 +1,8 @@
 const chalk = require("chalk");
 const express = require("express");
 const path = require("path");
+const mongoose = require("mongoose");
+
 const {
   addNote,
   getNotes,
@@ -30,17 +32,28 @@ app.get("/", async (req, res) => {
     title: "Express app",
     notes: await getNotes(),
     created: false,
+    error: false,
   });
 });
 
 app.post("/", async (req, res) => {
-  console.log(req.body);
-  await addNote(req.body.title);
-  res.render("index", {
-    title: "Express app",
-    notes: await getNotes(),
-    created: true,
-  });
+  try {
+    await addNote(req.body.title);
+    res.render("index", {
+      title: "Express app",
+      notes: await getNotes(),
+      created: true,
+      error: false,
+    });
+  } catch (e) {
+    console.error("Creation Error", e);
+    res.render("index", {
+      title: "Express app",
+      notes: await getNotes(),
+      created: false,
+      error: true,
+    });
+  }
 });
 
 app.delete("/:id", async (req, res) => {
@@ -49,16 +62,26 @@ app.delete("/:id", async (req, res) => {
     title: "Express app",
     notes: await getNotes(),
     created: false,
+    error: false,
   });
 });
 
 app.put("/:id", async (req, res) => {
-  const { id } = req.params;
-  const { title } = req.body;
-  await updateNoteById(id, title);
-  res.status(200).json({ message: "Note updated" });
+  await updateNoteById({ id: req.params.id, title: req.body.title });
+  res.render("index", {
+    title: "Express app",
+    notes: await getNotes(),
+    created: false,
+    error: false,
+  });
 });
 
-app.listen(port, () => {
-  console.log(chalk.green(`Server has been started on port ${port}...`));
-});
+mongoose
+  .connect(
+    "mongodb+srv://eepodoprigora:Q8CTV0vDvuML5czi@cluster0.bjnjz.mongodb.net/notes?retryWrites=true&w=majority&appName=Cluster0"
+  )
+  .then(() => {
+    app.listen(port, () => {
+      console.log(chalk.green(`Server has been started on port ${port}...`));
+    });
+  });
