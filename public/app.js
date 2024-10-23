@@ -1,94 +1,40 @@
-document.addEventListener("click", (e) => {
-  if (e.target.dataset.type === "remove") {
-    const id = e.target.dataset.id;
-    removeNote(id).then(() => e.target.closest("li").remove());
-  }
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.querySelector(".application-form");
+  const submitBtn = document.querySelector(".submit-btn");
+  const successMessage = document.querySelector(".succes-message");
 
-  if (e.target.classList.contains("edit-btn")) {
-    const li = e.target.closest("li");
-    const {
-      titleElement,
-      inputElement,
-      editBtn,
-      saveBtn,
-      cancelBtn,
-      deleteBtn,
-    } = getNoteElements(li);
+  if (!form) return;
 
-    titleElement.style.display = "none";
-    inputElement.style.display = "block";
-    editBtn.style.display = "none";
-    saveBtn.style.display = "inline-block";
-    cancelBtn.style.display = "inline-block";
-    deleteBtn.style.display = "none";
-  }
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-  if (e.target.classList.contains("save-btn")) {
-    const li = e.target.closest("li");
-    const {
-      titleElement,
-      inputElement,
-      editBtn,
-      saveBtn,
-      cancelBtn,
-      deleteBtn,
-    } = getNoteElements(li);
+    submitBtn.disabled = true;
 
-    const newTitle = inputElement.value;
+    const name = document.getElementById("name").value;
+    const phone = document.getElementById("phone").value;
+    const description = document.getElementById("description").value;
 
-    edit(e.target.dataset.id, newTitle).then(() => {
-      titleElement.textContent = newTitle;
+    const data = { name, phone, description };
 
-      inputElement.style.display = "none";
-      titleElement.style.display = "block";
-      saveBtn.style.display = "none";
-      cancelBtn.style.display = "none";
-      editBtn.style.display = "inline-block";
-      deleteBtn.style.display = "inline-block";
-    });
-  }
+    try {
+      const response = await fetch("/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
-  if (e.target.classList.contains("cancel-btn")) {
-    const li = e.target.closest("li");
-    const {
-      titleElement,
-      inputElement,
-      editBtn,
-      saveBtn,
-      cancelBtn,
-      deleteBtn,
-    } = getNoteElements(li);
-
-    inputElement.style.display = "none";
-    titleElement.style.display = "block";
-    saveBtn.style.display = "none";
-    cancelBtn.style.display = "none";
-    editBtn.style.display = "inline-block";
-    deleteBtn.style.display = "inline-block";
-  }
-});
-
-async function removeNote(id) {
-  await fetch(`/${id}`, { method: "DELETE" });
-}
-
-async function edit(id, newTitle) {
-  await fetch(`/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ title: newTitle }),
+      if (response.ok) {
+        successMessage.style.display = "block";
+        form.reset();
+      } else {
+        console.error("Error submitting the form");
+      }
+    } catch (error) {
+      console.error("Request failed", error);
+    } finally {
+      submitBtn.disabled = false;
+    }
   });
-}
-
-function getNoteElements(li) {
-  return {
-    titleElement: li.querySelector(".note-title"),
-    inputElement: li.querySelector(".edit-input"),
-    editBtn: li.querySelector(".edit-btn"),
-    saveBtn: li.querySelector(".save-btn"),
-    cancelBtn: li.querySelector(".cancel-btn"),
-    deleteBtn: li.querySelector(".btn-danger"),
-  };
-}
+});

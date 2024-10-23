@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Медицинский центр</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous" />
+  </head>
+
+  <body class="min-vh-100 d-flex flex-column">
+    <%- include('./partials/user-header') %>
+    <div class="d-flex justify-content-center flex-grow-1">
+      <div class="w-75 d-flex flex-column">
+        <h3 class="mb-4 mt-4">Страница заявок</h3>
+        <form action="/applications" method="GET" class="d-flex mb-4">
+          <input class="form-control flex-grow-1" type="text" name="search" placeholder="Поиск заявок..." value="<%= search %>">
+          <button class="btn btn-primary" type="submit">Поиск</button>
+        </form>
+        <% if(applications.length) { %>
+          <div class="flex-grow-1">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th class="w-25" scope="col">Дата отправки</th>
+                  <th class="w-25" scope="col">ФИО</th>
+                  <th class="w-25" scope="col">Телефон</th>
+                  <th class="w-25" scope="col">Проблема</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% for(let i=0; i<applications.length; i++) { %>
+                <tr>
+                  <td><%=applications[i].date%></td>
+                  <td><%=applications[i].name%></td>
+                  <td><%=applications[i].phone%></td>
+                  <td><%=applications[i].description%></td>
+                </tr>
+                <%  } %>
+              </tbody>
+            </table>
+          </div>
+          <% if(totalPages !==1) { %>
+            <ul class="pagination justify-content-center">
+          <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item">
+              <a class="page-link" href="/applications?page=<%= i %>&search=<%= search %>"><%= i %></a>
+            </li>
+            <% } %>
+           </ul>
+           <% } %>
+        <%  } else { %>
+          <p>Нет заявок</p>
+          <%  }  %>
+      </div>
+
+    </div>
+
+  </body>
+</html>

@@ -12,6 +12,7 @@ function auth(req, res, next) {
 
     next();
   } catch (e) {
+    res.clearCookie("token");
     res.redirect("/login");
   }
 }

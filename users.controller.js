@@ -5,9 +5,18 @@ const User = require("./models/user");
 
 const { JWT_SECRET } = require("./constants");
 
-async function addUser(email, password) {
-  const passwordHash = await bcrypt.hash(password, 10);
-  await User.create({ email, password: passwordHash });
+async function createUser(email, password) {
+  console.log(email, password, "passw");
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = User({
+    email,
+    password: hashedPassword,
+  });
+
+  await user.save();
+  console.log(`User ${email} created`);
 }
 
 async function loginUser(email, password) {
@@ -26,6 +35,6 @@ async function loginUser(email, password) {
 }
 
 module.exports = {
-  addUser,
   loginUser,
+  createUser,
 };
